@@ -34,32 +34,30 @@
   </div>
 
   <script type="module">
-    import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signInAnonymously // <--- Add this
-} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    // Combine all auth functions into ONE import statement
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    signInAnonymously 
+  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyAvx9hiN2U8rGtym8LpKVC1Tbh6GNQWFyM",
+    authDomain: "noncyclicphosphorylation.firebaseapp.com",
+    projectId: "noncyclicphosphorylation",
+    storageBucket: "noncyclicphosphorylation.appspot.com",
+    messagingSenderId: "483565604638",
+    appId: "1:483565604638:web:3dafa7e1f6d06bf3b2030f",
+    measurementId: "G-KXCQEVJC9Y"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
     
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } 
-      from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-
-    // Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAvx9hiN2U8rGtym8LpKVC1Tbh6GNQWFyM",
-      authDomain: "noncyclicphosphorylation.firebaseapp.com",
-      projectId: "noncyclicphosphorylation",
-      storageBucket: "noncyclicphosphorylation.appspot.com",
-      messagingSenderId: "483565604638",
-      appId: "1:483565604638:web:3dafa7e1f6d06bf3b2030f",
-      measurementId: "G-KXCQEVJC9Y"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-
     // Toggle Log In / Sign Up form
     const loginForm = document.getElementById("loginForm");
     const signupWrapper = document.getElementById("signupWrapper");
@@ -116,21 +114,21 @@
 
     //Anonymously Sign Up
     // Add an event listener for a 'Guest Login' button
-document.getElementById("guestLoginBtn").addEventListener("click", () => {
-  signInAnonymously(auth)
-    .then(() => {
-      alert("Logged in as Guest!");
-      window.location.href = "web.html";
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      document.getElementById("error-message").innerText = errorMessage;
-    });
-});
-  </script>
+document.getElementById("guestLoginBtn").addEventListener("click", (e) => {
+    e.preventDefault(); // Prevents the form from trying to submit like a normal button
+    signInAnonymously(auth)
+      .then(() => {
+        alert("Logged in as Guest!");
+        window.location.href = "web.html";
+      })
+      .catch((error) => {
+        document.getElementById("error-message").innerText = error.message;
+      });
+  });
+</script>
 </body>
 </html>
+
 
 
 
