@@ -17,6 +17,7 @@
       <input type="password" id="password" placeholder="Password" required />
       <button type="submit">Login</button>
       <button id="toggleSignup">Create Account</button>
+      <button id="guestLoginBtn">Anonymous</button>
     </form>
 
     <div id="signupWrapper" class="hidden">
@@ -33,6 +34,13 @@
   </div>
 
   <script type="module">
+    import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signInAnonymously // <--- Add this
+} from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } 
       from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
@@ -105,7 +113,23 @@
           document.getElementById("error-message").innerText = error.message;
         });
     });
+
+    //Anonymously Sign Up
+    // Add an event listener for a 'Guest Login' button
+document.getElementById("guestLoginBtn").addEventListener("click", () => {
+  signInAnonymously(auth)
+    .then(() => {
+      alert("Logged in as Guest!");
+      window.location.href = "index.html";
+    })
+    .catch((error) => {
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      document.getElementById("error-message").innerText = errorMessage;
+    });
+});
   </script>
 </body>
 </html>
+
 
