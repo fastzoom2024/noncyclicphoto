@@ -52,7 +52,54 @@
 	<script src="data/player.js?E410E160"></script>
     <div id="content"></div>
     <div id="spr0_4674d448"><audio id="snd0_4674d448" preload="none"><source src="data/sound1.mp3" type="audio/mpeg"/></audio><audio id="snd1_4674d448" preload="none"><source src="data/sound2.mp3" type="audio/mpeg"/></audio><audio id="snd2_4674d448" preload="none"><source src="data/sound3.mp3" type="audio/mpeg"/></audio><audio id="snd3_4674d448" preload="none"><source src="data/sound4.mp3" type="audio/mpeg"/></audio><audio id="snd4_4674d448" preload="none"><source src="data/sound5.mp3" type="audio/mpeg"/></audio><audio id="snd5_4674d448" preload="none"><source src="data/sound6.mp3" type="audio/mpeg"/></audio><audio id="snd6_4674d448" preload="none"><source src="data/sound1.mp3" type="audio/mpeg"/></audio><audio id="snd7_4674d448" preload="none"><source src="data/sound2.mp3" type="audio/mpeg"/></audio><audio id="snd8_4674d448" preload="none"><source src="data/sound3.mp3" type="audio/mpeg"/></audio><audio id="snd9_4674d448" preload="none"><source src="data/sound4.mp3" type="audio/mpeg"/></audio><audio id="snd10_4674d448" preload="none"><source src="data/sound5.mp3" type="audio/mpeg"/></audio><audio id="snd11_4674d448" preload="none"><source src="data/sound6.mp3" type="audio/mpeg"/></audio></div>
-    <script>
+    <script type = "module">
+		import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    // 1. YOUR FIREBASE CONFIG (Must be here too)
+    const firebaseConfig = {
+        apiKey: "AIzaSyAvx9hiN2U8rGtym8LpKVC1Tbh6GNQWFyM",
+        authDomain: "noncyclicphosphorylation.firebaseapp.com",
+        projectId: "noncyclicphosphorylation",
+        storageBucket: "noncyclicphosphorylation.appspot.com",
+        messagingSenderId: "483565604638",
+        appId: "1:483565604638:web:3dafa7e1f6d06bf3b2030f"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const userUID = localStorage.getItem("userUID");
+
+    // 2. ISPRING CONNECTOR
+    // This function runs when the iSpring player is ready
+    window.ispringPresentationConnector = {
+        register: function(player) {
+            const presentation = player.presentation();
+            const view = player.view();
+
+            // RESUME LOGIC: Jump to saved page when player starts
+            const savedPage = localStorage.getItem("resumePage") || 1;
+            if (savedPage > 1) {
+                // iSpring pages are 0-indexed, so Page 1 is index 0
+                view.gotoSlide(parseInt(savedPage) - 1);
+                console.log("Resumed to page: " + savedPage);
+            }
+
+            // SAVE LOGIC: Listen for slide changes
+            view.slideChangeEvent().subscribe(function(slideIndex) {
+                const actualPage = slideIndex + 1;
+                console.log("Moved to page: " + actualPage);
+                
+                // Update Firebase
+                if (userUID) {
+                    const userRef = doc(db, "users", userUID);
+                    updateDoc(userRef, {
+                        currentPage: actualPage
+                    }).catch(err => console.error("Firestore Error:", err));
+                }
+            });
+        }
+    };
 		(function(startup){
 			function start(savedPresentationState)
 			{
