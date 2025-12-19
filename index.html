@@ -120,7 +120,7 @@ document.getElementById("guestLoginBtn").addEventListener("click", () => {
   signInAnonymously(auth)
     .then(() => {
       alert("Logged in as Guest!");
-      window.location.href = "index.html";
+      window.location.href = "web.html";
     })
     .catch((error) => {
       const errorCode = error.code;
@@ -131,5 +131,6 @@ document.getElementById("guestLoginBtn").addEventListener("click", () => {
   </script>
 </body>
 </html>
+
 
 
