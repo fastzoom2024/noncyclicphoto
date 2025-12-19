@@ -34,7 +34,7 @@
   </div>
 
   <script type="module">
-    // Combine all auth functions into ONE import statement
+  // 1. All necessary imports
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
   import { 
     getAuth, 
@@ -42,8 +42,13 @@
     createUserWithEmailAndPassword, 
     signInAnonymously 
   } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+  import { 
+    getFirestore, 
+    doc, 
+    getDoc 
+  } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
 
-  // Your Firebase config
+  // 2. Firebase Config
   const firebaseConfig = {
     apiKey: "AIzaSyAvx9hiN2U8rGtym8LpKVC1Tbh6GNQWFyM",
     authDomain: "noncyclicphosphorylation.firebaseapp.com",
@@ -54,81 +59,92 @@
     measurementId: "G-KXCQEVJC9Y"
   };
 
-  // Initialize Firebase
+  // 3. Initialize Services
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-    
-    // Toggle Log In / Sign Up form
-    const loginForm = document.getElementById("loginForm");
-    const signupWrapper = document.getElementById("signupWrapper");
-    const toggleBtn = document.getElementById("toggleSignup");
-    const toggleLoginBtn = document.getElementById("toggleLogin");
+  const db = getFirestore(app);
 
-    // Show signup, hide login
-    toggleBtn.addEventListener("click", (e) => {
+  // --- UI Selectors ---
+  const loginForm = document.getElementById("loginForm");
+  const signupWrapper = document.getElementById("signupWrapper");
+  const errorMsg = document.getElementById("error-message");
+
+  // --- Helper: Fetch Progress and Redirect ---
+  async function handleUserSession(user) {
+    try {
+      const docSnap = await getDoc(doc(db, "users", user.uid));
+      let startPage = 1;
+
+      if (docSnap.exists()) {
+        startPage = docSnap.data().currentPage;
+      }
+
+      // Store in localStorage for web.html to use
+      localStorage.setItem("resumePage", startPage);
+      localStorage.setItem("userUID", user.uid);
+      
+      window.location.href = "web.html";
+    } catch (err) {
+      console.error("Error fetching progress:", err);
+      window.location.href = "web.html"; // Redirect anyway if DB fails
+    }
+  }
+
+  // --- Toggle Forms ---
+  document.getElementById("toggleSignup").addEventListener("click", (e) => {
     e.preventDefault();
     signupWrapper.classList.remove("hidden");
     loginForm.classList.add("hidden");
-    });
+  });
 
-    // Show login, hide signup
-    toggleLoginBtn.addEventListener("click", (e) => {
+  document.getElementById("toggleLogin").addEventListener("click", (e) => {
     e.preventDefault();
     signupWrapper.classList.add("hidden");
     loginForm.classList.remove("hidden");
-    });
+  });
 
+  // --- Login Logic ---
+  loginForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-    // Login
-    document.getElementById("loginForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          alert("Login successful!");
-          console.log(userCredential.user);
-          window.location.href = "web.html";
-        })
-        .catch((error) => {
-          document.getElementById("error-message").innerText = error.message;
-        });
-    });
-
-    // Sign Up
-    document.getElementById("signupForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-      const email = document.getElementById("signupEmail").value;
-      const password = document.getElementById("signupPassword").value;
-
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          alert("Account created!");
-          console.log(userCredential.user);
-        })
-        .catch((error) => {
-          document.getElementById("error-message").innerText = error.message;
-        });
-    });
-
-    //Anonymously Sign Up
-    // Add an event listener for a 'Guest Login' button
-document.getElementById("guestLoginBtn").addEventListener("click", (e) => {
-    e.preventDefault(); // Prevents the form from trying to submit like a normal button
-    signInAnonymously(auth)
-      .then(() => {
-        alert("Logged in as Guest!");
-        window.location.href = "web.html";
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        handleUserSession(userCredential.user);
       })
       .catch((error) => {
-        document.getElementById("error-message").innerText = error.message;
+        errorMsg.innerText = error.message;
+      });
+  });
+
+  // --- Sign Up Logic ---
+  document.getElementById("signupForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const email = document.getElementById("signupEmail").value;
+    const password = document.getElementById("signupPassword").value;
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        alert("Account created!");
+        handleUserSession(userCredential.user);
+      })
+      .catch((error) => {
+        errorMsg.innerText = error.message;
+      });
+  });
+
+  // --- Anonymous Login ---
+  document.getElementById("guestLoginBtn").addEventListener("click", (e) => {
+    e.preventDefault();
+    signInAnonymously(auth)
+      .then((userCredential) => {
+        handleUserSession(userCredential.user);
+      })
+      .catch((error) => {
+        errorMsg.innerText = error.message;
       });
   });
 </script>
 </body>
 </html>
-
-
-
-
