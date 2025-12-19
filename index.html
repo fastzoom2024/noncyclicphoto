@@ -83,7 +83,7 @@
         .then((userCredential) => {
           alert("Login successful!");
           console.log(userCredential.user);
-          window.location.href = "index.html";
+          window.location.href = "web.html";
         })
         .catch((error) => {
           document.getElementById("error-message").innerText = error.message;
@@ -108,3 +108,4 @@
   </script>
 </body>
 </html>
+
